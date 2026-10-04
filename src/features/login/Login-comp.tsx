@@ -1,50 +1,26 @@
-import test from "../../../assets/Icon.svg";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import test from "@/assets/Icon.svg";
+import { Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from 'yup';
-import axios from "axios";
-import { TfiEmail, TfiEye, TfiLock } from "react-icons/tfi";
+import { TfiEmail, TfiLock } from "react-icons/tfi";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple, FaEyeSlash } from "react-icons/fa";
-import { useState } from "react";
+import { FaApple } from "react-icons/fa";
+import { useLogin } from "./login-hook";
 
 export default function LoginComp() {
-    const loginSchema = Yup.object().shape({
-        identifier: Yup.string().email('wrong email').required('email is required'),
-        password: Yup.string().min(6, 'password too short').required('Required'),
-    });
+    const {
+        pathname,
+        showPassword,
+        setShowPassword,
+        loginError,
+        setLoginError,
+        loginSchema,
+        loginUser,
 
-    const location = useLocation();
-    const pathname = location.pathname;
-    const navigate = useNavigate();
-
-    const [showPassword, setShowPassword] = useState(false);
-    const [loginError, setLoginError] = useState("");
-
-    const loginUser = async (values) => {
-        setLoginError("");
-        await axios.post('http://localhost:1337/api/auth/local', {
-            identifier: values.identifier,
-            password: values.password
-        })
-            .then(response => {
-                const token = response.data.jwt;
-                localStorage.setItem("jwt", token);
-                navigate('/', { replace: true });
-            })
-            .catch(error => {
-                setLoginError("Email or Password is incorrect");
-            });
-    }
-
-    const passwordStatus = () => {
-        setShowPassword(!showPassword);
-    };
-
-    const EyeIcon = showPassword ? FaEyeSlash : TfiEye;
+        EyeIcon,
+    } = useLogin();
 
     return (
-        <div className="  flex p-6 w-full justify-center items-center rounded-xl flex-col shadow-2xl bg-white gap-4 md:gap-6 lg:gap-8">
+        <div className="flex p-6 w-full justify-center items-center rounded-xl flex-col shadow-2xl bg-white gap-4 md:gap-6 lg:gap-8">
             <div className="flex justify-center items-center gap-4 flex-col">
                 <div className="w-16 h-16 bg-primary-store rounded-full flex justify-center items-center">
                     <img src={test} width={100} height={100} className="w-7.5 h-7.5" alt={"avatar logo"} />
@@ -66,9 +42,9 @@ export default function LoginComp() {
                     </Link>
                 </div>
 
-                <Formik initialValues={{ identifier: '', password: '' }} validationSchema={loginSchema} onSubmit={loginUser} >
+                <Formik initialValues={{ identifier: '', password: '' }} validationSchema={loginSchema} onSubmit={loginUser}>
                     {({ errors, values }) => (
-                        <Form className="flex flex-col w-full gap-4" onChange={() => { setLoginError("") }}>
+                        <Form className="flex flex-col w-full gap-4" onChange={() => setLoginError("")}>
                             <div className="email-div relative">
                                 <label htmlFor="email" className="text-[12px] font-medium text-footer-color">Email Address</label>
                                 <div className="absolute inset-y-13 inset-s-3 flex items-center pointer-events-none">
@@ -78,11 +54,7 @@ export default function LoginComp() {
                                     name="identifier" id="email" type="email" placeholder="name@example.com"
                                     className={`rounded-lg block focus:outline-0 mt-1 w-full p-3 pl-10 border ${!values.identifier ? 'border-gray-300' : errors.identifier ? 'border-red-600' : 'border-green-600'}`}
                                 />
-                                <ErrorMessage
-                                    name="identifier"
-                                    component="p"
-                                    className="text-red-600 text-[12px]  mt-1"
-                                />
+                                <ErrorMessage name="identifier" component="p" className="text-red-600 text-[12px] mt-1" />
                             </div>
 
                             <div className="password-div relative">
@@ -92,73 +64,51 @@ export default function LoginComp() {
                                 </div>
 
                                 <Field
-                                    name="password" id="password" type={showPassword === false ? "password" : "text"} placeholder="••••••••"
+                                    name="password" id="password" type={!showPassword ? "password" : "text"} placeholder="••••••••"
                                     className={`rounded-lg block focus:outline-0 mt-1 w-full p-3 pl-10 border ${!values.password ? 'border-gray-300' : errors.password ? 'border-red-600' : 'border-green-600'}`}
                                 />
                                 <button
-                                    className="absolute cursor-pointer inset-y-13 inset-e-3 flex items-center"
+                                    className="absolute cursor-pointer top-1/2 -translate-y-1/2 end-3 flex items-center"
                                     type="button"
-                                    onClick={passwordStatus}>
-
+                                    onClick={() => { setShowPassword((prev) => !prev) }}>
                                     <EyeIcon className="text-gray-400 text-lg" />
-
                                 </button>
 
-                                <ErrorMessage
-                                    name="password"
-                                    component="p"
-                                    className="text-red-600 text-[12px] mt-1 "
-                                />
+                                <ErrorMessage name="password" component="p" className="text-red-600 text-[12px] mt-1" />
                             </div>
 
                             {loginError && (
-                                <p className=" bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-[14px]">{loginError}</p>
+                                <p className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-[14px]">{loginError}</p>
                             )}
 
-
                             <div className="flex w-full justify-end">
-                                <Link className="w-fit text-sm text-footer-primary transition-all duration-300 ease-in-out   hover:-translate-y-0.5" to={"/forgetpassword"}>Forgot Password?</Link>
+                                <Link className="w-fit text-sm text-footer-primary transition-all duration-300 ease-in-out hover:-translate-y-0.5" to={"/forgetpassword"}>Forgot Password?</Link>
                             </div>
 
-
-                            <button type="submit" disabled={errors.identifier || errors.password ? true : false}
+                            <button type="submit" disabled={Boolean(errors.identifier || errors.password)}
                                 className={`w-full transition-all duration-400 ease-in-out p-3 rounded-lg text-white flex justify-center items-center ${(errors.identifier || errors.password || !values.identifier || !values.password) ? 'bg-gray-300' : 'cursor-pointer bg-primary-store hover:shadow-lg hover:-translate-y-0.5 hover:bg-green-800'}`}>
-                                Login </button>
+                                Login
+                            </button>
                         </Form>
                     )}
                 </Formik>
 
-
-
                 <div className="flex items-center justify-center gap-4 text-form-gray w-full my-6">
                     <div className="h-px bg-form-gray flex-1"></div>
-
-                    <p className="text-[12px] font-medium whitespace-nowrap">
-                        OR CONTINUE WITH
-                    </p>
-
+                    <p className="text-[12px] font-medium whitespace-nowrap">OR CONTINUE WITH</p>
                     <div className="h-px bg-form-gray flex-1"></div>
                 </div>
 
-
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
-                    <a
-                        className="border border-form-gray flex justify-center items-center gap-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1"
-                        href={"http://localhost:1337/api/connect/google"}
-                    >
+                    <a className="border border-form-gray flex justify-center items-center gap-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1" href={`http://localhost:1337/api/connect/google`}>
                         <FcGoogle className="text-xl" />
                         <span className="text-[14px] font-semibold text-footer-secondary leading-5">Google</span>
                     </a>
-                    <a
-                        className="border border-form-gray flex justify-center items-center gap-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1"
-                        href={"#"}
-                    >
+                    <a className="border border-form-gray flex justify-center items-center gap-2 p-3 rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1" href={"#"}>
                         <FaApple className="text-xl" />
                         <span className="text-[14px] font-semibold text-footer-secondary leading-5">Apple</span>
                     </a>
                 </div>
-
             </div>
         </div>
     );

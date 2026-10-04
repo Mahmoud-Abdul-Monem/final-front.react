@@ -1,7 +1,7 @@
-import FoSection from "../app/home-comp/FoSection";
-import FSection from "../app/home-comp/FSection";
-import SSection from "../app/home-comp/SSection";
-import TSection from "../app/home-comp/TSection";
+import FoSection from "@/features/home/components/FoSection";
+import FSection from "@/features/home/components/FSection";
+import SSection from "@/features/home/components/SSection";
+import TSection from "@/features/home/components/TSection";
 
 
 export default function App() {

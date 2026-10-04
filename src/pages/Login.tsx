@@ -1,4 +1,4 @@
-import LoginComp from "../app/auth/components/Login-comp";
+import LoginComp from "@/features/login/Login-comp";
 
 export default function Login() {
     return (

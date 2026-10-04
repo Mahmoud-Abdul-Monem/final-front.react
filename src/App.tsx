@@ -1,10 +1,11 @@
 import { Route, Routes, } from "react-router-dom";
 import Home from "./pages/Home";
-import AuthLayout from "./app/layouts/AuthLayout";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
+import Register from "@/pages/Register";
+import Login from "@/pages/Login";
+import AuthLayout from "@/features/layouts/AuthLayout";
 
 export default function App() {
+
 	return (
 
 		<Routes>

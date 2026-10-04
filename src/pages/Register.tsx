@@ -1,4 +1,4 @@
-import RegisComp from "../app/auth/components/Regis-comp";
+import RegisComp from "@/features/register/Regis-comp";
 
 export default function page() {
     return (

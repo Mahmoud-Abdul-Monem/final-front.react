@@ -1,4 +1,4 @@
-import bagPic from "../../assets/Group 1.png"
+import bagPic from "@/assets/Group 1.png"
 
 export default function FSection() {
   return (
